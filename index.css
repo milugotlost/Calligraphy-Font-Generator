@@ -1,11 +1,11 @@
+@import "tailwindcss";
+
 /* 書法字體生成器 - 設計系統 */
 
-/* ================================
-   字體嵌入 - 教育部標準隸書
-   ================================ */
+/* 載入嵌入的教育部標準隸書字體 */
 @font-face {
   font-family: 'MoeLi';
-  src: url('./fonts/MoeLi.ttf') format('truetype');
+  src: url('./assets/fonts/MoeLi.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

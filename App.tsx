@@ -4,6 +4,9 @@ import { SVGCanvas } from './components/SVGCanvas';
 import { TextConfig, SealConfig } from './types';
 import saveAs from 'file-saver';
 import { Brush, Sparkles } from 'lucide-react';
+// Import font file directly to get the hashed URL processed by Vite
+// @ts-ignore - Importing ttf is valid in Vite but TS might complain without specific config
+import fontUrl from './assets/fonts/MoeLi.ttf';
 
 const DEFAULT_TEXT = `隸書
 風格
@@ -49,14 +52,7 @@ const App: React.FC = () => {
 
     try {
       // 1. Fetch Font and convert to Base64
-      // 使用 import.meta.env.BASE_URL 確保在 GitHub Pages 子目錄下也能正確抓到
-      // 移除 'fonts/' 前面的 './'，改由 BASE_URL 拼接
-      const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-        ? import.meta.env.BASE_URL
-        : import.meta.env.BASE_URL + '/';
-
-      const fontUrl = `${baseUrl}fonts/MoeLi.ttf`;
-
+      // 使用 import 進來的 fontUrl，Vite 會確保它是正確的最終路徑
       console.log(`[Export] Fetching font from: ${fontUrl}`);
       const fontResponse = await fetch(fontUrl);
 
