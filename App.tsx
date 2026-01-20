@@ -50,7 +50,7 @@ const App: React.FC = () => {
     try {
       // 1. Fetch Font and convert to Base64
       // 為了確保匯出時字體正確，我們需要將字體檔轉為 Base64 嵌入
-      const fontResponse = await fetch('./fonts/MoeLI(隸書3.0版1080724上網).ttf');
+      const fontResponse = await fetch('./fonts/MoeLi.ttf');
       const fontBlob = await fontResponse.blob();
       const fontBase64 = await blobToBase64(fontBlob);
 
