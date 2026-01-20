@@ -49,29 +49,47 @@ const App: React.FC = () => {
 
     try {
       // 1. Fetch Font and convert to Base64
-      // 為了確保匯出時字體正確，我們需要將字體檔轉為 Base64 嵌入
-      const fontResponse = await fetch('./fonts/MoeLi.ttf');
-      const fontBlob = await fontResponse.blob();
-      const fontBase64 = await blobToBase64(fontBlob);
+      // 使用 import.meta.env.BASE_URL 確保在 GitHub Pages 子目錄下也能正確抓到
+      // 移除 'fonts/' 前面的 './'，改由 BASE_URL 拼接
+      const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+        ? import.meta.env.BASE_URL
+        : import.meta.env.BASE_URL + '/';
 
-      // 2. Insert Font Style into SVG Data
+      const fontUrl = `${baseUrl}fonts/MoeLi.ttf`;
+
+      console.log(`[Export] Fetching font from: ${fontUrl}`);
+      const fontResponse = await fetch(fontUrl);
+
+      if (!fontResponse.ok) {
+        throw new Error(`Failed to fetch font: ${fontResponse.statusText}`);
+      }
+
+      const fontBlob = await fontResponse.blob();
+
+      // 強制指定 MIME type，確保 FileReader 輸出 data:font/ttf;base64
+      const ttfBlob = new Blob([fontBlob], { type: 'font/ttf' });
+      const fontBase64 = await blobToBase64(ttfBlob);
+
+      // 2. Prepare Font Style
+      // 使用 <style> 標籤包覆，確保在 SVG 內部正確解析
       const fontStyle = `
-        @font-face {
-          font-family: 'MoeLi';
-          src: url('${fontBase64}') format('truetype');
-        }
+        <style>
+          @font-face {
+            font-family: 'MoeLi';
+            src: url('${fontBase64}') format('truetype');
+          }
+        </style>
       `;
 
-      // Serialize SVG
+      // 3. Serialize and Inject
       let svgData = new XMLSerializer().serializeToString(svgRef.current);
 
-      // Inject Style if not present or append
-      // 簡單的注入方式：在 <svg> 標籤後插入 <defs><style>...</style></defs>
-      // 由於 XMLSerializer 輸出的字串包含命名空間，我們找第一個 '>' 插入
+      // 在 <svg ...> 標籤後插入 <defs>
       const svgTagEnd = svgData.indexOf('>');
       if (svgTagEnd > 0) {
-        const defs = `<defs><style>${fontStyle}</style></defs>`;
-        svgData = svgData.slice(0, svgTagEnd + 1) + defs + svgData.slice(svgTagEnd + 1);
+        const defsContent = `<defs>${fontStyle}</defs>`;
+        // 插入在 svg tag 之後
+        svgData = svgData.slice(0, svgTagEnd + 1) + defsContent + svgData.slice(svgTagEnd + 1);
       }
 
       if (format === 'svg') {
@@ -110,11 +128,16 @@ const App: React.FC = () => {
           }
         };
 
+        img.onerror = (e) => {
+          console.error("Image load failed", e);
+          alert("圖片生成失敗，可能是字體檔案過大或記憶體不足。");
+        };
+
         img.src = url;
       }
     } catch (error) {
       console.error("Export failed:", error);
-      alert("匯出失敗，請檢查網路連線或稍後再試。");
+      alert(`匯出失敗: ${error instanceof Error ? error.message : '未知錯誤'}`);
     }
   };
 
