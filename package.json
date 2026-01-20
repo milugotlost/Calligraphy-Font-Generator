@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://USER.github.io/lishu-calligraphy-generator/",
+  "homepage": "https://milugotlost.github.io/Calligraphy-Font-Generator/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
