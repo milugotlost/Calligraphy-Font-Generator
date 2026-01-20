@@ -34,45 +34,87 @@ const App: React.FC = () => {
     visible: true,
   });
 
-  const handleExport = (format: 'svg' | 'png' = 'svg') => {
+  // Helper: Convert Blob to Base64
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handleExport = async (format: 'svg' | 'png' = 'svg') => {
     if (!svgRef.current) return;
 
-    if (format === 'svg') {
-      // 匯出 SVG
-      const svgData = new XMLSerializer().serializeToString(svgRef.current);
-      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-      saveAs(svgBlob, `calligraphy-${Date.now()}.svg`);
-    } else {
-      // 匯出 PNG
-      const svg = svgRef.current;
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+    try {
+      // 1. Fetch Font and convert to Base64
+      // 為了確保匯出時字體正確，我們需要將字體檔轉為 Base64 嵌入
+      const fontResponse = await fetch('./fonts/MoeLI(隸書3.0版1080724上網).ttf');
+      const fontBlob = await fontResponse.blob();
+      const fontBase64 = await blobToBase64(fontBlob);
 
-      // 設定 Canvas 尺寸
-      const width = svg.getAttribute('width') ? Number(svg.getAttribute('width')) : 1000;
-      const height = svg.getAttribute('height') ? Number(svg.getAttribute('height')) : 1000;
-      canvas.width = width;
-      canvas.height = height;
-
-      // 轉換 SVG 為 Blob URL
-      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-
-      img.onload = () => {
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          canvas.toBlob((blob) => {
-            if (blob) {
-              saveAs(blob, `calligraphy-${Date.now()}.png`);
-            }
-            URL.revokeObjectURL(url);
-          }, 'image/png');
+      // 2. Insert Font Style into SVG Data
+      const fontStyle = `
+        @font-face {
+          font-family: 'MoeLi';
+          src: url('${fontBase64}') format('truetype');
         }
-      };
+      `;
 
-      img.src = url;
+      // Serialize SVG
+      let svgData = new XMLSerializer().serializeToString(svgRef.current);
+
+      // Inject Style if not present or append
+      // 簡單的注入方式：在 <svg> 標籤後插入 <defs><style>...</style></defs>
+      // 由於 XMLSerializer 輸出的字串包含命名空間，我們找第一個 '>' 插入
+      const svgTagEnd = svgData.indexOf('>');
+      if (svgTagEnd > 0) {
+        const defs = `<defs><style>${fontStyle}</style></defs>`;
+        svgData = svgData.slice(0, svgTagEnd + 1) + defs + svgData.slice(svgTagEnd + 1);
+      }
+
+      if (format === 'svg') {
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        saveAs(svgBlob, `calligraphy-${Date.now()}.svg`);
+      } else {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
+        // Get Dimensions
+        const width = svgRef.current.getAttribute('width') ? Number(svgRef.current.getAttribute('width')) : 1000;
+        const height = svgRef.current.getAttribute('height') ? Number(svgRef.current.getAttribute('height')) : 1000;
+
+        // Use higher scale for better PNG quality
+        const scale = 2;
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+
+        if (ctx) {
+          ctx.scale(scale, scale);
+        }
+
+        const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        img.onload = () => {
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                saveAs(blob, `calligraphy-${Date.now()}.png`);
+              }
+              URL.revokeObjectURL(url);
+            }, 'image/png');
+          }
+        };
+
+        img.src = url;
+      }
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("匯出失敗，請檢查網路連線或稍後再試。");
     }
   };
 
