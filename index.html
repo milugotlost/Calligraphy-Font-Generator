@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>書法字體生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Importing Noto Serif TC, Ma Shan Zheng (Kaishu), and ZCOOL XiaoWei (Lishu style fallback) -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@400;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Noto Serif TC', serif;
+        background-color: #fdfbf7; /* Rice paper off-white */
+      }
+      /* 載入嵌入的教育部標準隸書字體 */
+      @font-face {
+        font-family: 'MoeLi';
+        src: url('./fonts/MoeLI(隸書3.0版1080724上網).ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+      .font-lishu {
+        font-family: 'MoeLi', "教育部標準隸書", "MOEStandardLishu", "MOE Lishu", "文鼎隸書_B", "AR LiShuB5 BD", "LiSu", "Lishu", "隶书", "ZCOOL XiaoWei", serif;
+      }
+      .font-kaishu {
+        font-family: 'Ma Shan Zheng', cursive;
+      }
+      .font-serif {
+        font-family: 'Noto Serif TC', serif;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "file-saver": "https://esm.sh/file-saver@^2.0.5",
+    "@google/genai": "https://esm.sh/@google/genai@^1.37.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

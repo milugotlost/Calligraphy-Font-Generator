@@ -1,0 +1,5 @@
+{
+  "name": "Lishu Calligraphy Generator (隸書生成器)",
+  "description": "A traditional Chinese calligraphy generator capable of vertical and horizontal layouts with SVG export.",
+  "requestFramePermissions": []
+}

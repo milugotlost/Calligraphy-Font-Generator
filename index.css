@@ -1,0 +1,528 @@
+/* 書法字體生成器 - 設計系統 */
+
+/* ================================
+   字體嵌入 - 教育部標準隸書
+   ================================ */
+@font-face {
+  font-family: 'MoeLi';
+  src: url('./fonts/MoeLI(隸書3.0版1080724上網).ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ================================
+   CSS 變數 - 設計 Token
+   ================================ */
+:root {
+  /* 色彩系統 - 書法水墨風格 */
+  --color-ink-darkest: #0d0d0d;
+  --color-ink-dark: #1a1a1a;
+  --color-ink-medium: #333333;
+  --color-ink-light: #666666;
+  --color-ink-faint: #999999;
+
+  --color-paper-white: #fdfdfb;
+  --color-paper-cream: #f8f6f0;
+  --color-paper-warm: #f5f0e6;
+  --color-paper-antique: #efe8dc;
+
+  --color-gold-primary: #c9a227;
+  --color-gold-light: #d4b94a;
+  --color-gold-dark: #a6851f;
+
+  --color-seal-red: #c22b2b;
+  --color-seal-dark: #8b1a1a;
+
+  --color-accent-teal: #2d6e6e;
+  --color-accent-forest: #3d5a3d;
+
+  /* 漸層 */
+  --gradient-paper: linear-gradient(135deg, var(--color-paper-cream) 0%, var(--color-paper-warm) 50%, var(--color-paper-antique) 100%);
+  --gradient-header: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  --gradient-gold: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold-primary) 50%, var(--color-gold-light) 100%);
+
+  /* 陰影 */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* 間距 */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* 圓角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* 動畫 */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ================================
+   基礎樣式
+   ================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--gradient-paper);
+  color: var(--color-ink-dark);
+  font-family: 'Noto Serif TC', serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 背景紋理效果 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ================================
+   字體樣式
+   ================================ */
+.font-lishu {
+  font-family: 'MoeLi', "教育部標準隸書", "MOEStandardLishu", "MOE Lishu", "文鼎隸書_B", "AR LiShuB5 BD", "LiSu", "Lishu", "隶书", "ZCOOL XiaoWei", serif;
+}
+
+.font-kaishu {
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+.font-serif-tc {
+  font-family: 'Noto Serif TC', serif;
+}
+
+/* ================================
+   輸入元件樣式
+   ================================ */
+.input-primary {
+  background-color: #ffffff;
+  color: var(--color-ink-dark);
+  border: 1px solid #d1c9b8;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-family: inherit;
+  font-size: 1rem;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.input-primary:focus {
+  outline: none;
+  border-color: var(--color-gold-primary);
+  box-shadow:
+    0 0 0 3px rgba(201, 162, 39, 0.15),
+    var(--shadow-md);
+}
+
+.input-primary:hover:not(:focus) {
+  border-color: #b8a898;
+}
+
+/* 文字輸入區 - 白底黑字 */
+.textarea-calligraphy {
+  background-color: #ffffff;
+  color: var(--color-ink-darkest);
+  border: 2px solid #e0d8cc;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  font-family: inherit;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  resize: vertical;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-normal);
+  box-shadow: var(--shadow-inset);
+}
+
+.textarea-calligraphy:focus {
+  outline: none;
+  border-color: var(--color-gold-primary);
+  box-shadow:
+    var(--shadow-inset),
+    0 0 0 4px rgba(201, 162, 39, 0.12);
+}
+
+.textarea-calligraphy::placeholder {
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+/* ================================
+   按鈕樣式
+   ================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: var(--gradient-header);
+  color: var(--color-paper-cream);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-gold {
+  background: var(--gradient-gold);
+  color: #1a1a1a;
+}
+
+/* ================================
+   卡片樣式
+   ================================ */
+.card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(224, 216, 204, 0.6);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  border-bottom: 2px solid var(--color-gold-primary);
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ================================
+   標題樣式
+   ================================ */
+.heading-primary {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-ink-dark);
+  letter-spacing: 0.1em;
+  position: relative;
+}
+
+.heading-primary::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--gradient-gold);
+  border-radius: 2px;
+}
+
+.heading-decorated {
+  display: inline-block;
+  padding-left: var(--spacing-md);
+  border-left: 4px solid var(--color-gold-primary);
+}
+
+/* ================================
+   動畫效果
+   ================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ================================
+   滑軌樣式
+   ================================ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, var(--color-paper-antique), var(--color-gold-light));
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-ink-dark);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-ink-dark);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+/* ================================
+   顏色選擇器樣式
+   ================================ */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 2px solid #d1c9b8;
+  border-radius: var(--radius-md);
+  padding: 2px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+input[type="color"]:hover {
+  border-color: var(--color-gold-primary);
+}
+
+input[type="color"]:focus {
+  outline: none;
+  border-color: var(--color-gold-primary);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.2);
+}
+
+/* ================================
+   核取方塊樣式
+   ================================ */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #b8a898;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--color-ink-dark);
+  border-color: var(--color-ink-dark);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--color-gold-primary);
+}
+
+/* ================================
+   印章效果
+   ================================ */
+.seal-stamp {
+  filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.3));
+  transition: filter var(--transition-fast);
+}
+
+.seal-stamp:hover {
+  filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.4));
+}
+
+/* ================================
+   畫布容器樣式
+   ================================ */
+.canvas-container {
+  background:
+    linear-gradient(45deg, #f5f0e6 25%, transparent 25%),
+    linear-gradient(-45deg, #f5f0e6 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f5f0e6 75%),
+    linear-gradient(-45deg, transparent 75%, #f5f0e6 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ================================
+   響應式設計
+   ================================ */
+@media (max-width: 1024px) {
+  :root {
+    --spacing-xl: 1.5rem;
+    --spacing-2xl: 2rem;
+  }
+
+  .heading-primary {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.25rem;
+  }
+
+  .heading-primary {
+    font-size: 1.5rem;
+  }
+}
+
+/* ================================
+   滾動條美化
+   ================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-paper-cream);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c9a227 0%, #a6851f 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #d4b94a 0%, #c9a227 100%);
+}
+
+/* ================================
+   選取文字樣式
+   ================================ */
+::selection {
+  background: rgba(201, 162, 39, 0.3);
+  color: var(--color-ink-dark);
+}
+
+::-moz-selection {
+  background: rgba(201, 162, 39, 0.3);
+  color: var(--color-ink-dark);
+}
