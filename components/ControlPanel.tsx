@@ -7,7 +7,7 @@ interface ControlPanelProps {
   setConfig: (config: TextConfig) => void;
   seal: SealConfig;
   setSeal: (seal: SealConfig) => void;
-  onDownload: () => void;
+  onDownload: (format: 'svg' | 'png') => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, seal, setSeal, onDownload }) => {
@@ -176,14 +176,30 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, s
           </div>
           <div className="space-y-2">
             <label className="block text-sm" style={{ color: 'var(--color-ink-light)' }}>紙色 (Paper)</label>
-            <input
-              type="color"
-              value={config.backgroundColor}
-              onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-              className="h-12 w-full cursor-pointer"
-            />
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={config.backgroundColor}
+                onChange={(e) => updateConfig('backgroundColor', e.target.value)}
+                disabled={config.transparentBg}
+                className={`h-12 w-full cursor-pointer transition-opacity ${config.transparentBg ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+            </div>
           </div>
         </div>
+
+        {/* 透明背景開關 */}
+        <label className="flex items-center gap-2 cursor-pointer select-none border border-stone-200 rounded-lg p-3 hover:bg-stone-50 transition-colors">
+          <input
+            type="checkbox"
+            checked={config.transparentBg}
+            onChange={(e) => updateConfig('transparentBg', e.target.checked)}
+            className="w-4 h-4"
+          />
+          <span className="text-sm font-medium" style={{ color: 'var(--color-ink-medium)' }}>
+            ✨ 使用透明背景 (Transparent Background)
+          </span>
+        </label>
       </div>
 
       <div className="flex items-center justify-between pt-2">
@@ -241,13 +257,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, s
         )}
       </div>
 
-      <div className="pt-4">
+      <div className="pt-4 grid grid-cols-2 gap-3">
         <button
-          onClick={onDownload}
-          className="btn-primary w-full py-4 text-lg"
+          onClick={() => onDownload('svg')}
+          className="btn-primary w-full py-3 text-base flex flex-col items-center justify-center gap-1"
         >
-          <Download size={22} />
-          下載 SVG (Download)
+          <div className="flex items-center gap-2">
+            <Download size={20} />
+            <span>SVG</span>
+          </div>
+          <span className="text-xs opacity-80 font-normal">向量 (Vector)</span>
+        </button>
+        <button
+          onClick={() => onDownload('png')}
+          className="btn-primary w-full py-3 text-base flex flex-col items-center justify-center gap-1"
+          style={{ background: 'var(--color-ink-medium)' }}
+        >
+          <div className="flex items-center gap-2">
+            <Download size={20} />
+            <span>PNG</span>
+          </div>
+          <span className="text-xs opacity-80 font-normal">圖檔 (Image)</span>
         </button>
       </div>
 

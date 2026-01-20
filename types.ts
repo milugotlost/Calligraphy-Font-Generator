@@ -13,6 +13,7 @@ export interface TextConfig {
   backgroundColor: string;
   showGrid: boolean;
   padding: number;
+  transparentBg: boolean;
 }
 
 export interface SealConfig {

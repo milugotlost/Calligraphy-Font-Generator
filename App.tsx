@@ -23,6 +23,7 @@ const App: React.FC = () => {
     backgroundColor: '#fdfbf7', // warm paper
     showGrid: false,
     padding: 60,
+    transparentBg: false,
   });
 
   const [seal, setSeal] = useState<SealConfig>({
@@ -33,13 +34,45 @@ const App: React.FC = () => {
     visible: true,
   });
 
-  const handleExport = () => {
-    if (svgRef.current) {
-      // Clone the SVG node
+  const handleExport = (format: 'svg' | 'png' = 'svg') => {
+    if (!svgRef.current) return;
+
+    if (format === 'svg') {
+      // 匯出 SVG
       const svgData = new XMLSerializer().serializeToString(svgRef.current);
-      // Add XML declaration
       const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
       saveAs(svgBlob, `calligraphy-${Date.now()}.svg`);
+    } else {
+      // 匯出 PNG
+      const svg = svgRef.current;
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      // 設定 Canvas 尺寸
+      const width = svg.getAttribute('width') ? Number(svg.getAttribute('width')) : 1000;
+      const height = svg.getAttribute('height') ? Number(svg.getAttribute('height')) : 1000;
+      canvas.width = width;
+      canvas.height = height;
+
+      // 轉換 SVG 為 Blob URL
+      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      img.onload = () => {
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              saveAs(blob, `calligraphy-${Date.now()}.png`);
+            }
+            URL.revokeObjectURL(url);
+          }, 'image/png');
+        }
+      };
+
+      img.src = url;
     }
   };
 
@@ -132,7 +165,7 @@ const App: React.FC = () => {
             config={config}
             seal={seal}
             setSeal={setSeal}
-            onExport={handleExport}
+            onExport={() => handleExport('svg')}
             forwardedRef={svgRef}
           />
           <p

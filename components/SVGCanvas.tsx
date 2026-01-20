@@ -10,7 +10,7 @@ interface SVGCanvasProps {
 }
 
 export const SVGCanvas: React.FC<SVGCanvasProps> = ({ config, seal, setSeal, onExport, forwardedRef }) => {
-  const { text, fontSize, letterSpacing, lineHeight, layout, font, color, backgroundColor, showGrid, padding } = config;
+  const { text, fontSize, letterSpacing, lineHeight, layout, font, color, backgroundColor, showGrid, padding, transparentBg } = config;
 
   // Split text into lines
   const lines = text.split('\n');
@@ -126,6 +126,12 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({ config, seal, setSeal, onE
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      style={{
+        // 顯示棋盤格背景以凸顯透明效果
+        backgroundImage: 'linear-gradient(45deg, #e5e5e5 25%, transparent 25%), linear-gradient(-45deg, #e5e5e5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e5e5 75%), linear-gradient(-45deg, transparent 75%, #e5e5e5 75%)',
+        backgroundSize: '20px 20px',
+        backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+      }}
     >
       <svg
         ref={forwardedRef}
@@ -133,8 +139,8 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({ config, seal, setSeal, onE
         height={canvasHeight}
         viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
         xmlns="http://www.w3.org/2000/svg"
-        className="bg-white shadow-lg cursor-default"
-        style={{ backgroundColor: backgroundColor }}
+        className="shadow-lg cursor-default transition-colors duration-300"
+        style={{ backgroundColor: transparentBg ? 'transparent' : backgroundColor }}
       >
         {/* Background Texture Effect (Simple noise or gradient could be added here, sticking to solid color for SVG purity for now) */}
 
