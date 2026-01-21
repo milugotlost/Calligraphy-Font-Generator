@@ -4,6 +4,7 @@ import { SVGCanvas } from './components/SVGCanvas';
 import { TextConfig, SealConfig } from './types';
 import saveAs from 'file-saver';
 import { Brush, Sparkles } from 'lucide-react';
+import opentype from 'opentype.js';
 // Import font file directly to get the hashed URL processed by Vite
 // @ts-ignore - Importing ttf is valid in Vite but TS might complain without specific config
 import fontUrl from './assets/fonts/MoeLi.ttf';
@@ -14,6 +15,7 @@ const DEFAULT_TEXT = `隸書
 
 const App: React.FC = () => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [config, setConfig] = useState<TextConfig>({
     text: DEFAULT_TEXT,
@@ -47,60 +49,102 @@ const App: React.FC = () => {
     });
   };
 
+  // Helper: Load font using opentype.js
+  const loadFont = async (): Promise<opentype.Font> => {
+    return new Promise((resolve, reject) => {
+      opentype.load(fontUrl, (err, font) => {
+        if (err || !font) {
+          reject(err || new Error('Failed to load font'));
+        } else {
+          resolve(font);
+        }
+      });
+    });
+  };
+
+  // Helper: Convert text element to path using opentype.js
+  const textToPath = (
+    font: opentype.Font,
+    text: string,
+    x: number,
+    y: number,
+    fontSize: number
+  ): string => {
+    const path = font.getPath(text, x, y, fontSize);
+    return path.toSVG(2); // precision = 2 decimal places
+  };
+
+  // Main export function with text-to-path conversion
   const handleExport = async (format: 'svg' | 'png' = 'svg') => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || isExporting) return;
+
+    setIsExporting(true);
 
     try {
-      // 1. Fetch Font and convert to Base64
-      // 使用 import 進來的 fontUrl，Vite 會確保它是正確的最終路徑
-      console.log(`[Export] Fetching font from: ${fontUrl}`);
-      const fontResponse = await fetch(fontUrl);
+      console.log('[Export] Loading font for text-to-path conversion...');
+      const font = await loadFont();
+      console.log('[Export] Font loaded successfully');
 
-      if (!fontResponse.ok) {
-        throw new Error(`Failed to fetch font: ${fontResponse.statusText}`);
-      }
+      // Clone the SVG to avoid modifying the original
+      const svgClone = svgRef.current.cloneNode(true) as SVGSVGElement;
 
-      const fontBlob = await fontResponse.blob();
+      // Find all text elements and convert to paths
+      const textElements = svgClone.querySelectorAll('text');
+      console.log(`[Export] Found ${textElements.length} text elements to convert`);
 
-      // 強制指定 MIME type，確保 FileReader 輸出 data:font/ttf;base64
-      const ttfBlob = new Blob([fontBlob], { type: 'font/ttf' });
-      const fontBase64 = await blobToBase64(ttfBlob);
+      textElements.forEach((textEl) => {
+        const text = textEl.textContent || '';
+        if (!text.trim()) return;
 
-      // 2. Prepare Font Style
-      // 使用 <style> 標籤包覆，確保在 SVG 內部正確解析
-      const fontStyle = `
-        <style>
-          @font-face {
-            font-family: 'MoeLi';
-            src: url('${fontBase64}') format('truetype');
-          }
-        </style>
-      `;
+        const x = parseFloat(textEl.getAttribute('x') || '0');
+        const y = parseFloat(textEl.getAttribute('y') || '0');
+        const fill = textEl.getAttribute('fill') || textEl.closest('g')?.getAttribute('fill') || '#000';
 
-      // 3. Serialize and Inject
-      let svgData = new XMLSerializer().serializeToString(svgRef.current);
+        // Get font size from parent g or element itself
+        const parentG = textEl.closest('g');
+        let fontSize = 80; // default
+        if (parentG) {
+          const fsSrc = parentG.getAttribute('font-size');
+          if (fsSrc) fontSize = parseFloat(fsSrc);
+        }
+        const elFontSize = textEl.getAttribute('font-size');
+        if (elFontSize) fontSize = parseFloat(elFontSize);
 
-      // 在 <svg ...> 標籤後插入 <defs>
-      const svgTagEnd = svgData.indexOf('>');
-      if (svgTagEnd > 0) {
-        const defsContent = `<defs>${fontStyle}</defs>`;
-        // 插入在 svg tag 之後
-        svgData = svgData.slice(0, svgTagEnd + 1) + defsContent + svgData.slice(svgTagEnd + 1);
-      }
+        // Convert text to path SVG string
+        const pathSvg = textToPath(font, text, x, y, fontSize);
+
+        // Parse the path SVG and create a proper path element
+        const parser = new DOMParser();
+        const pathDoc = parser.parseFromString(pathSvg, 'image/svg+xml');
+        const pathEl = pathDoc.querySelector('path');
+
+        if (pathEl) {
+          pathEl.setAttribute('fill', fill);
+          // Replace text element with path element
+          textEl.parentNode?.replaceChild(pathEl, textEl);
+        }
+      });
+
+      // Serialize the modified SVG
+      let svgData = new XMLSerializer().serializeToString(svgClone);
+
+      // Clean up any xmlns issues from parsing
+      svgData = svgData.replace(/xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
 
       if (format === 'svg') {
         const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-        saveAs(svgBlob, `calligraphy-${Date.now()}.svg`);
+        saveAs(svgBlob, `calligraphy-outlined-${Date.now()}.svg`);
+        console.log('[Export] SVG with outlined text saved');
       } else {
+        // For PNG, we still need to embed font for the image rendering
+        // But since text is now paths, we don't need the font
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
 
-        // Get Dimensions
-        const width = svgRef.current.getAttribute('width') ? Number(svgRef.current.getAttribute('width')) : 1000;
-        const height = svgRef.current.getAttribute('height') ? Number(svgRef.current.getAttribute('height')) : 1000;
+        const width = svgClone.getAttribute('width') ? Number(svgClone.getAttribute('width')) : 1000;
+        const height = svgClone.getAttribute('height') ? Number(svgClone.getAttribute('height')) : 1000;
 
-        // Use higher scale for better PNG quality
         const scale = 2;
         canvas.width = width * scale;
         canvas.height = height * scale;
@@ -118,8 +162,10 @@ const App: React.FC = () => {
             canvas.toBlob((blob) => {
               if (blob) {
                 saveAs(blob, `calligraphy-${Date.now()}.png`);
+                console.log('[Export] PNG saved');
               }
               URL.revokeObjectURL(url);
+              setIsExporting(false);
             }, 'image/png');
           }
         };
@@ -127,14 +173,18 @@ const App: React.FC = () => {
         img.onerror = (e) => {
           console.error("Image load failed", e);
           alert("圖片生成失敗，可能是字體檔案過大或記憶體不足。");
+          setIsExporting(false);
         };
 
         img.src = url;
+        return; // Early return to keep isExporting true until callback
       }
     } catch (error) {
       console.error("Export failed:", error);
       alert(`匯出失敗: ${error instanceof Error ? error.message : '未知錯誤'}`);
     }
+
+    setIsExporting(false);
   };
 
   return (
@@ -199,6 +249,7 @@ const App: React.FC = () => {
             seal={seal}
             setSeal={setSeal}
             onDownload={handleExport}
+            isExporting={isExporting}
           />
         </div>
 
@@ -233,10 +284,10 @@ const App: React.FC = () => {
             className="mt-5 text-sm text-center leading-relaxed"
             style={{ color: 'var(--color-ink-light)' }}
           >
-            💡 提示：您可以拖曳紅色印章調整位置。下載格式為 SVG 向量檔。
+            💡 提示：您可以拖曳紅色印章調整位置。
             <br />
             <span style={{ color: 'var(--color-ink-faint)' }}>
-              註：優先使用「教育部標準隸書」。請確保您的電腦已安裝該字體。
+              📝 匯出的 SVG 文字已轉為路徑，可在任何軟體中正確顯示。
             </span>
           </p>
         </div>

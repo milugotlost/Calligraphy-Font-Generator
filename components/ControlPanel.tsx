@@ -8,9 +8,10 @@ interface ControlPanelProps {
   seal: SealConfig;
   setSeal: (seal: SealConfig) => void;
   onDownload: (format: 'svg' | 'png') => void;
+  isExporting?: boolean;
 }
 
-export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, seal, setSeal, onDownload }) => {
+export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, seal, setSeal, onDownload, isExporting = false }) => {
 
   const updateConfig = <K extends keyof TextConfig>(key: K, value: TextConfig[K]) => {
     setConfig({ ...config, [key]: value });
@@ -260,24 +261,26 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, s
       <div className="pt-4 grid grid-cols-2 gap-3">
         <button
           onClick={() => onDownload('svg')}
-          className="btn-primary w-full py-3 text-base flex flex-col items-center justify-center gap-1"
+          disabled={isExporting}
+          className="btn-primary w-full py-3 text-base flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-wait"
         >
           <div className="flex items-center gap-2">
-            <Download size={20} />
-            <span>SVG</span>
+            <Download size={20} className={isExporting ? 'animate-pulse' : ''} />
+            <span>{isExporting ? '轉換中...' : 'SVG'}</span>
           </div>
-          <span className="text-xs opacity-80 font-normal">向量 (Vector)</span>
+          <span className="text-xs opacity-80 font-normal">文字已轉路徑</span>
         </button>
         <button
           onClick={() => onDownload('png')}
-          className="btn-primary w-full py-3 text-base flex flex-col items-center justify-center gap-1"
+          disabled={isExporting}
+          className="btn-primary w-full py-3 text-base flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-wait"
           style={{ background: 'var(--color-ink-medium)' }}
         >
           <div className="flex items-center gap-2">
-            <Download size={20} />
-            <span>PNG</span>
+            <Download size={20} className={isExporting ? 'animate-pulse' : ''} />
+            <span>{isExporting ? '轉換中...' : 'PNG'}</span>
           </div>
-          <span className="text-xs opacity-80 font-normal">圖檔 (Image)</span>
+          <span className="text-xs opacity-80 font-normal">高解析圖檔</span>
         </button>
       </div>
 
