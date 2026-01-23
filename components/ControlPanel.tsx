@@ -142,7 +142,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, s
             <span className="font-mono font-bold" style={{ color: 'var(--color-gold-dark)' }}>{config.letterSpacing}px</span>
           </div>
           <input
-            type="range" min="0" max="100" value={config.letterSpacing}
+            type="range" min="-30" max="100" value={config.letterSpacing}
             onChange={(e) => updateConfig('letterSpacing', Number(e.target.value))}
             className="w-full"
           />
@@ -153,7 +153,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, s
             <span className="font-mono font-bold" style={{ color: 'var(--color-gold-dark)' }}>{config.lineHeight}px</span>
           </div>
           <input
-            type="range" min="0" max="150" value={config.lineHeight}
+            type="range" min="-30" max="150" value={config.lineHeight}
             onChange={(e) => updateConfig('lineHeight', Number(e.target.value))}
             className="w-full"
           />
